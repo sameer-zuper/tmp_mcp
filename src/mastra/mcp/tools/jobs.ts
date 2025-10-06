@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { makeZuperRequestWithContext, apiCredentialsSchema } from "./common";
 
-export function createJobTools(makeZuperRequest: Function, apiCredentialsSchema: z.ZodObject<any>, DEFAULT_ZUPER_API_KEY: string, DEFAULT_ZUPER_BASE_URL: string) {
+export function createJobTools() {
   return {
     createJob: {
       description:
@@ -33,8 +34,8 @@ export function createJobTools(makeZuperRequest: Function, apiCredentialsSchema:
           .describe("Array of user UIDs to assign to this job"),
       }),
       execute: async ({ context, runId, params }: any) => {
-        const { apiKey = DEFAULT_ZUPER_API_KEY, baseUrl = DEFAULT_ZUPER_BASE_URL, ...jobData } = params;
-        const result = await makeZuperRequest("/api/jobs", apiKey, baseUrl, "POST", jobData);
+        const { apiKey, baseUrl, ...jobData } = params;
+        const result = await makeZuperRequestWithContext("/api/jobs", context, { apiKey, baseUrl }, "POST", jobData);
         return {
           status: "success",
           data: result,
@@ -49,8 +50,8 @@ export function createJobTools(makeZuperRequest: Function, apiCredentialsSchema:
         jobUid: z.string().describe("Unique identifier of the job to retrieve"),
       }),
       execute: async ({ context, runId, params }: any) => {
-        const { apiKey = DEFAULT_ZUPER_API_KEY, baseUrl = DEFAULT_ZUPER_BASE_URL, jobUid } = params;
-        const result = await makeZuperRequest(`/api/jobs/${jobUid}`, apiKey, baseUrl);
+        const { apiKey, baseUrl, jobUid } = params;
+        const result = await makeZuperRequestWithContext(`/api/jobs/${jobUid}`, context, { apiKey, baseUrl });
         return {
           status: "success",
           data: result,
@@ -76,7 +77,7 @@ export function createJobTools(makeZuperRequest: Function, apiCredentialsSchema:
         limit: z.number().optional().default(50).describe("Number of results per page"),
       }),
       execute: async ({ context, runId, params }: any) => {
-        const { apiKey = DEFAULT_ZUPER_API_KEY, baseUrl = DEFAULT_ZUPER_BASE_URL, status, page = 1, limit = 50 } = params;
+        const { apiKey, baseUrl, status, page = 1, limit = 50 } = params;
         const queryParams = new URLSearchParams({
           page: page.toString(),
           limit: limit.toString(),
@@ -86,7 +87,7 @@ export function createJobTools(makeZuperRequest: Function, apiCredentialsSchema:
           queryParams.append("status", status);
         }
 
-        const result = await makeZuperRequest(`/api/jobs?${queryParams.toString()}`, apiKey, baseUrl);
+        const result = await makeZuperRequestWithContext(`/api/jobs?${queryParams.toString()}`, context, { apiKey, baseUrl });
         return {
           status: "success",
           data: result,
@@ -119,11 +120,11 @@ export function createJobTools(makeZuperRequest: Function, apiCredentialsSchema:
           .describe("Fields to update"),
       }),
       execute: async ({ context, runId, params }: any) => {
-        const { apiKey = DEFAULT_ZUPER_API_KEY, baseUrl = DEFAULT_ZUPER_BASE_URL, jobUid, updates } = params;
-        const result = await makeZuperRequest(
+        const { apiKey, baseUrl, jobUid, updates } = params;
+        const result = await makeZuperRequestWithContext(
           `/api/jobs/${jobUid}`,
-          apiKey,
-          baseUrl,
+          context,
+          { apiKey, baseUrl },
           "PUT",
           updates
         );
@@ -148,7 +149,7 @@ export function createJobTools(makeZuperRequest: Function, apiCredentialsSchema:
         notifyUsers: z.boolean().optional().describe("Whether to notify users (default: false)"),
       }),
       execute: async ({ context, runId, params }: any) => {
-        const { apiKey = DEFAULT_ZUPER_API_KEY, baseUrl = DEFAULT_ZUPER_BASE_URL, jobUid, users = [], teams = [], updateAllJobs = false, notifyUsers = false } = params;
+        const { apiKey, baseUrl, jobUid, users = [], teams = [], updateAllJobs = false, notifyUsers = false } = params;
 
         const assignmentData: any = {
           job_uid: jobUid,
@@ -168,10 +169,10 @@ export function createJobTools(makeZuperRequest: Function, apiCredentialsSchema:
           assignmentData.teams = teams;
         }
 
-        const result = await makeZuperRequest(
+        const result = await makeZuperRequestWithContext(
           `/api/jobs/assign`,
-          apiKey,
-          baseUrl,
+          context,
+          { apiKey, baseUrl },
           "POST",
           assignmentData
         );
@@ -196,7 +197,7 @@ export function createJobTools(makeZuperRequest: Function, apiCredentialsSchema:
         notifyUsers: z.boolean().optional().describe("Whether to notify users (default: false)"),
       }),
       execute: async ({ context, runId, params }: any) => {
-        const { apiKey = DEFAULT_ZUPER_API_KEY, baseUrl = DEFAULT_ZUPER_BASE_URL, jobUid, users = [], teams = [], updateAllJobs = false, notifyUsers = false } = params;
+        const { apiKey, baseUrl, jobUid, users = [], teams = [], updateAllJobs = false, notifyUsers = false } = params;
 
         const assignmentData: any = {
           job_uid: jobUid,
@@ -216,10 +217,10 @@ export function createJobTools(makeZuperRequest: Function, apiCredentialsSchema:
           assignmentData.teams = teams;
         }
 
-        const result = await makeZuperRequest(
+        const result = await makeZuperRequestWithContext(
           `/api/jobs/assign`,
-          apiKey,
-          baseUrl,
+          context,
+          { apiKey, baseUrl },
           "POST",
           assignmentData
         );

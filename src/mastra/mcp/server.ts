@@ -6,7 +6,7 @@ import { getAllTools } from "./tools";
 // Get all tools from modular structure
 const allTools = getAllTools();
 
-export const mcp = new MCPServer({
+export const zuper_mcp = new MCPServer({
   name: "zuper-fsm-server",
   version: "0.1.0",
   description: "Zuper Field Service Management MCP Server with 45 tools, resources, and smart prompts",

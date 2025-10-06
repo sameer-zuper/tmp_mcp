@@ -49,6 +49,8 @@ IMPORTANT: Always start with assistedScheduling tool for intelligent recommendat
      * Current workload (prefer less busy users)
      * Location proximity (if data available)
      * Previous job history with customer (if relevant)
+   - Assign only single user out of the eligible users
+
 
 4. **Get User's Team**
    - BEFORE assigning, call getUserTeams for the selected user
@@ -57,6 +59,7 @@ IMPORTANT: Always start with assistedScheduling tool for intelligent recommendat
 
 5. **Assign the Job**
    - Use assignJob tool to assign users to the job
+   - Assign only a single user based on best match
    - CRITICAL: When assigning users, you MUST provide both user_uid AND team_uid for each user
    - Get the team_uid from getUserTeams response (use primary_team_uid)
    - Example: If getUserTeams returns primary_team_uid "xyz-789", assign as: {userUid: "abc-123", teamUid: "xyz-789"}
@@ -113,7 +116,6 @@ Use these tools strategically to make informed assignment decisions.`,
 
   tools: getMastraToolsFromMcp(),
 
-  mastra,
 });
 
 /**

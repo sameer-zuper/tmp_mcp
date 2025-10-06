@@ -4,70 +4,72 @@
  * Organized by functional area for better maintainability
  */
 
-import { makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL } from "./common";
 import { createJobTools } from "./jobs";
-import { createUserTools } from "./users";
-import { createTeamTools } from "./teams";
-import { createCustomerTools } from "./customers";
-import { createInvoiceTools } from "./invoices";
-import { createPropertyTools } from "./properties";
-import { createTimesheetTools } from "./timesheets";
-import { createTimeOffTools } from "./timeoff";
-import { createAssetTools } from "./assets";
-import { createPartTools } from "./parts";
-import { createServiceContractTools } from "./contracts";
-import { createQuoteTools } from "./quotes";
+// TODO: Update other tool files to use the new context-aware pattern
+// import { createUserTools } from "./users";
+// import { createTeamTools } from "./teams";
+// import { createCustomerTools } from "./customers";
+// import { createInvoiceTools } from "./invoices";
+// import { createPropertyTools } from "./properties";
+// import { createTimesheetTools } from "./timesheets";
+// import { createTimeOffTools } from "./timeoff";
+// import { createAssetTools } from "./assets";
+// import { createPartTools } from "./parts";
+// import { createServiceContractTools } from "./contracts";
+// import { createQuoteTools } from "./quotes";
 
 // Export all tools organized by category
 export function getAllTools() {
-  const jobTools = createJobTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
-  const userTools = createUserTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
-  const teamTools = createTeamTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
-  const customerTools = createCustomerTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
-  const invoiceTools = createInvoiceTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
-  const propertyTools = createPropertyTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
-  const timesheetTools = createTimesheetTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
-  const timeOffTools = createTimeOffTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
-  const assetTools = createAssetTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
-  const partTools = createPartTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
-  const contractTools = createServiceContractTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
-  const quoteTools = createQuoteTools(makeZuperRequest, apiCredentialsSchema, DEFAULT_ZUPER_API_KEY, DEFAULT_ZUPER_BASE_URL);
+  const jobTools = createJobTools();
+  // TODO: Update these to use the new pattern without parameters
+  // const userTools = createUserTools();
+  // const teamTools = createTeamTools();
+  // const customerTools = createCustomerTools();
+  // const invoiceTools = createInvoiceTools();
+  // const propertyTools = createPropertyTools();
+  // const timesheetTools = createTimesheetTools();
+  // const timeOffTools = createTimeOffTools();
+  // const assetTools = createAssetTools();
+  // const partTools = createPartTools();
+  // const contractTools = createServiceContractTools();
+  // const quoteTools = createQuoteTools();
 
   return {
-    // Job Management Tools (7 tools)
+    // Job Management Tools (6 tools) - Updated to use runtime context
     ...jobTools,
 
+    // TODO: Migrate remaining tools to use runtime context
     // User Management Tools (4 tools)
-    ...userTools,
+    // ...userTools,
 
     // Team Management Tools (2 tools)
-    ...teamTools,
+    // ...teamTools,
 
     // Customer Management Tools (3 tools)
-    ...customerTools,
+    // ...customerTools,
 
     // Invoice Management Tools (3 tools)
-    ...invoiceTools,
+    // ...invoiceTools,
 
     // Property Management Tools (2 tools)
-    ...propertyTools,
+    // ...propertyTools,
 
     // Timesheet Tools (2 tools)
-    ...timesheetTools,
+    // ...timesheetTools,
 
     // Time-off Management Tools (2 tools)
-    ...timeOffTools,
+    // ...timeOffTools,
 
     // Asset Management Tools (3 tools)
-    ...assetTools,
+    // ...assetTools,
 
     // Parts & Inventory Tools (3 tools)
-    ...partTools,
+    // ...partTools,
 
     // Service Contract Tools (3 tools)
-    ...contractTools,
+    // ...contractTools,
 
     // Quote Management Tools (3 tools)
-    ...quoteTools,
+    // ...quoteTools,
   };
 }
