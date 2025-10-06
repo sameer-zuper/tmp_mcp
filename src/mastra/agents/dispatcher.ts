@@ -2,7 +2,7 @@ import { Agent } from "@mastra/core";
 import { z } from "zod";
 import { mastra } from "../index";
 import { openai } from "@ai-sdk/openai";
-import { zuperTools } from "../tools/zuper-tools";
+import { getMastraToolsFromMcp } from "../mcp/tools/mastra-adapter";
 
 /**
  * Dispatcher Agent
@@ -111,7 +111,7 @@ Use these tools strategically to make informed assignment decisions.`,
     apiKey: process.env.OPENAI_API_KEY,
   }),
 
-  tools: zuperTools,
+  tools: getMastraToolsFromMcp(),
 
   mastra,
 });
