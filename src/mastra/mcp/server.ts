@@ -1,5 +1,4 @@
 import { MCPServer } from "@mastra/mcp";
-import { mastra } from "../index";
 import { resources } from "./resources";
 import { prompts } from "./prompts";
 import { getAllTools } from "./tools";
@@ -10,8 +9,8 @@ const allTools = getAllTools();
 export const mcp = new MCPServer({
   name: "zuper-fsm-server",
   version: "0.1.0",
-  mastra,
+  description: "Zuper Field Service Management MCP Server with 45 tools, resources, and smart prompts",
+  tools: allTools,
   resources,
   prompts,
-  tools: allTools,
 });

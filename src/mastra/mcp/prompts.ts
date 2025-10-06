@@ -1,40 +1,97 @@
-import type { PromptHandler } from "@mastra/mcp";
+import type { MCPServerPrompts, Prompt, PromptArgument, PromptMessage } from "@mastra/mcp";
 
-export const prompts: Record<string, PromptHandler> = {
-  // Create a new job/work order
+// Define all available prompts with their metadata
+const promptDefinitions: Record<string, { description: string; arguments?: PromptArgument[] }> = {
   "create-job": {
     description: "Generate a prompt to create a new job/work order in Zuper FSM",
     arguments: [
-      {
-        name: "customerName",
-        description: "Name of the customer",
-        required: true,
-      },
-      {
-        name: "jobType",
-        description: "Type of job (e.g., repair, installation, maintenance)",
-        required: true,
-      },
-      {
-        name: "priority",
-        description: "Priority level (low, medium, high, urgent)",
-        required: false,
-      },
+      { name: "customerName", description: "Name of the customer", required: true },
+      { name: "jobType", description: "Type of job (e.g., repair, installation, maintenance)", required: true },
+      { name: "priority", description: "Priority level (low, medium, high, urgent)", required: false },
     ],
-    handler: async (args) => {
-      const { customerName, jobType, priority } = args as {
-        customerName: string;
-        jobType: string;
-        priority?: string;
-      };
+  },
+  "generate-invoice": {
+    description: "Generate an invoice for a completed job",
+    arguments: [{ name: "jobId", description: "UID of the job to generate invoice for", required: true }],
+  },
+  "daily-summary": {
+    description: "Generate a summary of jobs for today",
+    arguments: [],
+  },
+  "customer-overview": {
+    description: "Generate a comprehensive overview of a specific customer",
+    arguments: [{ name: "customerId", description: "UID of the customer or customer name", required: true }],
+  },
+  "optimize-schedule": {
+    description: "Optimize technician schedules and job assignments",
+    arguments: [{ name: "date", description: "Date to optimize (YYYY-MM-DD format)", required: false }],
+  },
+  "invoice-followup": {
+    description: "Generate follow-up actions for overdue invoices",
+    arguments: [],
+  },
+  "contract-review": {
+    description: "Review and analyze service contracts",
+    arguments: [{ name: "customerId", description: "Filter by specific customer (optional)", required: false }],
+  },
+  "performance-metrics": {
+    description: "Generate performance metrics and KPIs for field service operations",
+    arguments: [{ name: "period", description: "Time period (today, week, month, quarter)", required: false }],
+  },
+  "smart-dispatch": {
+    description: "Intelligently assign a job to the best available technician",
+    arguments: [
+      { name: "jobId", description: "UID of the job to assign", required: true },
+      { name: "priorityLevel", description: "Priority level (urgent assignments may override normal rules)", required: false },
+    ],
+  },
+  "check-availability": {
+    description: "Check technician availability for a specific date range",
+    arguments: [
+      { name: "userIds", description: "Comma-separated list of user UIDs to check", required: false },
+      { name: "startDate", description: "Start date (ISO 8601)", required: true },
+      { name: "endDate", description: "End date (ISO 8601)", required: true },
+    ],
+  },
+  "balance-workload": {
+    description: "Analyze and balance workload across technicians",
+    arguments: [
+      { name: "teamId", description: "Specific team to analyze (optional)", required: false },
+      { name: "dateRange", description: "Date range for analysis (e.g., 'this week', 'next month')", required: false },
+    ],
+  },
+  "skill-gap-analysis": {
+    description: "Analyze skill coverage and identify gaps in the team",
+    arguments: [{ name: "teamId", description: "Specific team to analyze (optional)", required: false }],
+  },
+};
 
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Create a new ${jobType} job for customer ${customerName}${priority ? ` with ${priority} priority` : ""}.
+export const prompts: MCPServerPrompts = {
+  // List all available prompts
+  listPrompts: async () => {
+    return Object.entries(promptDefinitions).map(
+      ([name, def]): Prompt => ({
+        name,
+        description: def.description,
+        arguments: def.arguments,
+      })
+    );
+  },
+
+  // Get messages for a specific prompt
+  getPromptMessages: async ({ params }) => {
+    const { name, arguments: args = {} } = params;
+
+    switch (name) {
+      case "create-job": {
+        const { customerName, jobType, priority } = args as { customerName: string; jobType: string; priority?: string };
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Create a new ${jobType} job for customer ${customerName}${priority ? ` with ${priority} priority` : ""}.
 
 First, search for the customer by name to get their UID. If the customer doesn't exist, create a new customer record first.
 
@@ -45,33 +102,21 @@ Then create a job with:
 - Schedule it for the next available time slot
 
 Provide a summary of the created job including job ID, scheduled time, and assigned technician if any.`,
+              },
             },
-          },
-        ],
-      };
-    },
-  },
+          ],
+        };
+      }
 
-  // Generate invoice for completed job
-  "generate-invoice": {
-    description: "Generate an invoice for a completed job",
-    arguments: [
-      {
-        name: "jobId",
-        description: "UID of the job to generate invoice for",
-        required: true,
-      },
-    ],
-    handler: async (args) => {
-      const { jobId } = args as { jobId: string };
-
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Generate an invoice for job ${jobId}.
+      case "generate-invoice": {
+        const { jobId } = args as { jobId: string };
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Generate an invoice for job ${jobId}.
 
 Steps:
 1. Retrieve the job details to get customer UID, services performed, and costs
@@ -85,25 +130,20 @@ Steps:
    - Any applicable notes or terms
 
 Provide a summary of the created invoice including invoice number and total amount.`,
+              },
             },
-          },
-        ],
-      };
-    },
-  },
+          ],
+        };
+      }
 
-  // Daily job summary
-  "daily-summary": {
-    description: "Generate a summary of jobs for today",
-    arguments: [],
-    handler: async () => {
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Generate a daily summary for today's jobs in Zuper FSM.
+      case "daily-summary": {
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Generate a daily summary for today's jobs in Zuper FSM.
 
 Include:
 1. Total number of scheduled jobs for today
@@ -114,33 +154,21 @@ Include:
 6. Technician utilization and assignments
 
 Format the summary in a clear, actionable format for field service management.`,
+              },
             },
-          },
-        ],
-      };
-    },
-  },
+          ],
+        };
+      }
 
-  // Customer overview
-  "customer-overview": {
-    description: "Generate a comprehensive overview of a specific customer",
-    arguments: [
-      {
-        name: "customerId",
-        description: "UID of the customer or customer name",
-        required: true,
-      },
-    ],
-    handler: async (args) => {
-      const { customerId } = args as { customerId: string };
-
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Generate a comprehensive overview for customer ${customerId}.
+      case "customer-overview": {
+        const { customerId } = args as { customerId: string };
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Generate a comprehensive overview for customer ${customerId}.
 
 Include:
 1. Customer details (name, contact info, properties)
@@ -151,34 +179,22 @@ Include:
 6. Any service contracts or recurring jobs
 
 Provide actionable insights and recommendations based on the customer's history.`,
+              },
             },
-          },
-        ],
-      };
-    },
-  },
+          ],
+        };
+      }
 
-  // Schedule optimization
-  "optimize-schedule": {
-    description: "Optimize technician schedules and job assignments",
-    arguments: [
-      {
-        name: "date",
-        description: "Date to optimize (YYYY-MM-DD format)",
-        required: false,
-      },
-    ],
-    handler: async (args) => {
-      const { date } = args as { date?: string };
-      const targetDate = date || "today";
-
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Analyze and optimize the job schedule for ${targetDate}.
+      case "optimize-schedule": {
+        const { date } = args as { date?: string };
+        const targetDate = date || "today";
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Analyze and optimize the job schedule for ${targetDate}.
 
 Analysis should include:
 1. List all scheduled jobs for ${targetDate}
@@ -189,25 +205,20 @@ Analysis should include:
 6. Highlight any high-priority jobs that need immediate attention
 
 Provide specific recommendations for schedule optimization with reasoning.`,
+              },
             },
-          },
-        ],
-      };
-    },
-  },
+          ],
+        };
+      }
 
-  // Invoice follow-up
-  "invoice-followup": {
-    description: "Generate follow-up actions for overdue invoices",
-    arguments: [],
-    handler: async () => {
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Generate a report of overdue invoices and follow-up actions.
+      case "invoice-followup": {
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Generate a report of overdue invoices and follow-up actions.
 
 Include:
 1. List all overdue invoices with customer names and amounts
@@ -218,34 +229,22 @@ Include:
 6. Total outstanding amount
 
 Format as an actionable follow-up plan for the accounts team.`,
+              },
             },
-          },
-        ],
-      };
-    },
-  },
+          ],
+        };
+      }
 
-  // Service contract review
-  "contract-review": {
-    description: "Review and analyze service contracts",
-    arguments: [
-      {
-        name: "customerId",
-        description: "Filter by specific customer (optional)",
-        required: false,
-      },
-    ],
-    handler: async (args) => {
-      const { customerId } = args as { customerId?: string };
-      const filter = customerId ? `for customer ${customerId}` : "for all customers";
-
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Review service contracts ${filter}.
+      case "contract-review": {
+        const { customerId } = args as { customerId?: string };
+        const filter = customerId ? `for customer ${customerId}` : "for all customers";
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Review service contracts ${filter}.
 
 Analysis should include:
 1. Active service contracts and their terms
@@ -256,34 +255,22 @@ Analysis should include:
 6. Contracts that may need attention or renegotiation
 
 Provide recommendations for contract management and renewal strategies.`,
+              },
             },
-          },
-        ],
-      };
-    },
-  },
+          ],
+        };
+      }
 
-  // Performance metrics
-  "performance-metrics": {
-    description: "Generate performance metrics and KPIs for field service operations",
-    arguments: [
-      {
-        name: "period",
-        description: "Time period (today, week, month, quarter)",
-        required: false,
-      },
-    ],
-    handler: async (args) => {
-      const { period } = args as { period?: string };
-      const timePeriod = period || "this month";
-
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Generate performance metrics and KPIs for ${timePeriod}.
+      case "performance-metrics": {
+        const { period } = args as { period?: string };
+        const timePeriod = period || "this month";
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Generate performance metrics and KPIs for ${timePeriod}.
 
 Metrics to include:
 1. Job completion rate and average completion time
@@ -296,38 +283,21 @@ Metrics to include:
 8. Job backlog and aging
 
 Provide insights and trends with recommendations for improvement.`,
+              },
             },
-          },
-        ],
-      };
-    },
-  },
+          ],
+        };
+      }
 
-  // Smart job dispatching
-  "smart-dispatch": {
-    description: "Intelligently assign a job to the best available technician",
-    arguments: [
-      {
-        name: "jobId",
-        description: "UID of the job to assign",
-        required: true,
-      },
-      {
-        name: "priorityLevel",
-        description: "Priority level (urgent assignments may override normal rules)",
-        required: false,
-      },
-    ],
-    handler: async (args) => {
-      const { jobId, priorityLevel } = args as { jobId: string; priorityLevel?: string };
-
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Assign job ${jobId} to the best available technician using intelligent dispatching.
+      case "smart-dispatch": {
+        const { jobId, priorityLevel } = args as { jobId: string; priorityLevel?: string };
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Assign job ${jobId} to the best available technician using intelligent dispatching.
 
 ${priorityLevel === "urgent" ? "⚠️ URGENT: This is a high-priority assignment. Consider emergency protocols." : ""}
 
@@ -348,49 +318,22 @@ Decision Process:
 6. Explain your decision with reasoning
 
 Provide the assigned technician's UID and a summary of why they were chosen.`,
+              },
             },
-          },
-        ],
-      };
-    },
-  },
+          ],
+        };
+      }
 
-  // Technician availability check
-  "check-availability": {
-    description: "Check technician availability for a specific date range",
-    arguments: [
-      {
-        name: "userIds",
-        description: "Comma-separated list of user UIDs to check",
-        required: false,
-      },
-      {
-        name: "startDate",
-        description: "Start date (ISO 8601)",
-        required: true,
-      },
-      {
-        name: "endDate",
-        description: "End date (ISO 8601)",
-        required: true,
-      },
-    ],
-    handler: async (args) => {
-      const { userIds, startDate, endDate } = args as {
-        userIds?: string;
-        startDate: string;
-        endDate: string;
-      };
-
-      const userFilter = userIds ? `for users: ${userIds}` : "for all active users";
-
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Check technician availability ${userFilter} from ${startDate} to ${endDate}.
+      case "check-availability": {
+        const { userIds, startDate, endDate } = args as { userIds?: string; startDate: string; endDate: string };
+        const userFilter = userIds ? `for users: ${userIds}` : "for all active users";
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Check technician availability ${userFilter} from ${startDate} to ${endDate}.
 
 Steps:
 1. ${userIds ? "Get details for specified users" : "List all active users"}
@@ -407,40 +350,23 @@ Provide:
 - Number of open slots (available hours)
 - Recommended users for new job assignments
 - Any scheduling conflicts or concerns`,
+              },
             },
-          },
-        ],
-      };
-    },
-  },
+          ],
+        };
+      }
 
-  // Workload balancing
-  "balance-workload": {
-    description: "Analyze and balance workload across technicians",
-    arguments: [
-      {
-        name: "teamId",
-        description: "Specific team to analyze (optional)",
-        required: false,
-      },
-      {
-        name: "dateRange",
-        description: "Date range for analysis (e.g., 'this week', 'next month')",
-        required: false,
-      },
-    ],
-    handler: async (args) => {
-      const { teamId, dateRange } = args as { teamId?: string; dateRange?: string };
-      const scope = teamId ? `for team ${teamId}` : "across all teams";
-      const period = dateRange || "for the upcoming week";
-
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Analyze and balance workload ${scope} ${period}.
+      case "balance-workload": {
+        const { teamId, dateRange } = args as { teamId?: string; dateRange?: string };
+        const scope = teamId ? `for team ${teamId}` : "across all teams";
+        const period = dateRange || "for the upcoming week";
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Analyze and balance workload ${scope} ${period}.
 
 Analysis Steps:
 1. Get all active users ${teamId ? `in team ${teamId}` : ""}
@@ -461,34 +387,22 @@ Provide:
 - Expected outcome after rebalancing
 
 If implementing changes, use updateJob to reassign jobs accordingly.`,
+              },
             },
-          },
-        ],
-      };
-    },
-  },
+          ],
+        };
+      }
 
-  // Skill gap analysis
-  "skill-gap-analysis": {
-    description: "Analyze skill coverage and identify gaps in the team",
-    arguments: [
-      {
-        name: "teamId",
-        description: "Specific team to analyze (optional)",
-        required: false,
-      },
-    ],
-    handler: async (args) => {
-      const { teamId } = args as { teamId?: string };
-      const scope = teamId ? `for team ${teamId}` : "organization-wide";
-
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Perform skill gap analysis ${scope}.
+      case "skill-gap-analysis": {
+        const { teamId } = args as { teamId?: string };
+        const scope = teamId ? `for team ${teamId}` : "organization-wide";
+        return {
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: `Perform skill gap analysis ${scope}.
 
 Analysis Process:
 1. List all users ${teamId ? `in team ${teamId}` : ""}
@@ -509,10 +423,14 @@ Provide:
 - Risk assessment for single points of failure
 
 This helps with strategic workforce planning and training initiatives.`,
+              },
             },
-          },
-        ],
-      };
-    },
+          ],
+        };
+      }
+
+      default:
+        throw new Error(`Unknown prompt: ${name}`);
+    }
   },
 };
