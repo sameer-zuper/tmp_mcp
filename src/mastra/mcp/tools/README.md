@@ -9,7 +9,7 @@ tools/
 ├── README.md           # This file
 ├── common.ts           # Shared utilities (makeZuperRequest, apiCredentialsSchema, constants)
 ├── index.ts            # Main entry point that exports all tools
-├── jobs.ts             # Job management tools (6 tools) ✅ MIGRATED
+├── jobs.ts             # Job management tools (7 tools) ✅ MIGRATED
 └── [future files]      # Other categories to be added
 ```
 
@@ -22,6 +22,7 @@ tools/
 - `updateJob` - Update existing job
 - `assignJob` - Assign technicians/teams to job
 - `unassignJob` - Unassign technicians/teams from job
+- `assistedScheduling` - Get AI-powered scheduling recommendations (availability, skills, location, holidays)
 
 ## To Be Migrated
 

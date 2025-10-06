@@ -230,5 +230,62 @@ export function createJobTools(makeZuperRequest: Function, apiCredentialsSchema:
         };
       },
     },
+
+    assistedScheduling: {
+      description: "Get intelligent scheduling recommendations based on availability, skills, location, and other factors. Returns optimal time slots and user suggestions for a job.",
+      parameters: apiCredentialsSchema.extend({
+        fromDate: z.string().describe("Start datetime for scheduling window (YYYY-MM-DD HH:mm:ss format, e.g., '2025-10-06 00:00:00')"),
+        toDate: z.string().describe("End datetime for scheduling window (YYYY-MM-DD HH:mm:ss format, e.g., '2025-10-13 23:59:59')"),
+        jobUid: z.string().optional().describe("Job UID to schedule"),
+        jobCategory: z.string().optional().describe("Job category"),
+        jobDuration: z.number().optional().describe("Job duration in minutes"),
+        serviceTerritory: z.string().optional().describe("Service territory"),
+        zipcode: z.string().optional().describe("Customer zipcode for location-based scheduling"),
+        timezone: z.string().optional().describe("Timezone (e.g., 'America/New_York')"),
+        skillsetUid: z.string().optional().describe("Required skillset UID"),
+        teamUid: z.string().optional().describe("Filter by team UID"),
+        userUid: z.string().optional().describe("Filter by specific user UID"),
+        customerUid: z.string().optional().describe("Customer UID"),
+        favoriteUser: z.boolean().optional().describe("Prioritize customer's favorite users"),
+        userType: z.string().optional().describe("User type filter"),
+        considerHolidays: z.boolean().optional().describe("Consider company holidays in scheduling"),
+        considerOnlyUserShifts: z.boolean().optional().describe("Only schedule during user's defined shifts"),
+      }),
+      execute: async ({ context, runId, params }: any) => {
+        const { apiKey = DEFAULT_ZUPER_API_KEY, baseUrl = DEFAULT_ZUPER_BASE_URL } = params;
+
+        // Build query params
+        const queryParams = new URLSearchParams();
+        if (params.fromDate) queryParams.append('from_date', params.fromDate);
+        if (params.toDate) queryParams.append('to_date', params.toDate);
+        if (params.jobUid) queryParams.append('job_uid', params.jobUid);
+        if (params.jobCategory) queryParams.append('job_category', params.jobCategory);
+        if (params.jobDuration) queryParams.append('job_duration', params.jobDuration.toString());
+        if (params.serviceTerritory) queryParams.append('service_territory', params.serviceTerritory);
+        if (params.zipcode) queryParams.append('zipcode', params.zipcode);
+        if (params.timezone) queryParams.append('timezone', params.timezone);
+        if (params.skillsetUid) queryParams.append('skillset_uid', params.skillsetUid);
+        if (params.teamUid) queryParams.append('team_uid', params.teamUid);
+        if (params.userUid) queryParams.append('user_uid', params.userUid);
+        if (params.customerUid) queryParams.append('customer_uid', params.customerUid);
+        if (params.favoriteUser !== undefined) queryParams.append('favorite_user', params.favoriteUser.toString());
+        if (params.userType) queryParams.append('user_type', params.userType);
+        if (params.considerHolidays !== undefined) queryParams.append('consider_holidays', params.considerHolidays.toString());
+        if (params.considerOnlyUserShifts !== undefined) queryParams.append('consider_only_user_shifts', params.considerOnlyUserShifts.toString());
+
+        const result = await makeZuperRequest(
+          `/api/assisted_scheduling?${queryParams.toString()}`,
+          apiKey,
+          baseUrl,
+          "GET"
+        );
+
+        return {
+          status: "success",
+          data: result,
+          message: "Retrieved scheduling recommendations",
+        };
+      },
+    },
   };
 }
